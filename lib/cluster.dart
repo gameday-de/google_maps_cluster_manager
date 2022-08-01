@@ -2,9 +2,6 @@ import 'package:google_maps_cluster_manager/google_maps_cluster_manager.dart';
 import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
 
 class Cluster<T extends ClusterItem> {
-  final LatLng location;
-  final Iterable<T> items;
-
   Cluster(this.items, this.location);
 
   Cluster.fromItems(Iterable<T> items)
@@ -25,6 +22,8 @@ class Cluster<T extends ClusterItem> {
             (cluster1.location.longitude * cluster1.count +
                     cluster2.location.longitude * cluster2.count) /
                 (cluster1.count + cluster2.count));
+  final LatLng location;
+  final Iterable<T> items;
 
   /// Get number of clustered items
   int get count => items.length;
