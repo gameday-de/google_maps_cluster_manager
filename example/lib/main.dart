@@ -1,10 +1,13 @@
 import 'dart:async';
 import 'dart:ui';
 
+import 'package:example/mock_data.dart';
 import 'package:example/place.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_maps_cluster_manager/algorithms/cluster_algorithm.dart';
+import 'package:google_maps_cluster_manager/algorithms/distance_clustering.dart';
 import 'package:google_maps_cluster_manager/google_maps_cluster_manager.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -38,34 +41,6 @@ class MapSampleState extends State<MapSample> {
   final CameraPosition _parisCameraPosition =
       CameraPosition(target: LatLng(48.856613, 2.352222), zoom: 12.0);
 
-  List<Place> items = [
-    for (int i = 0; i < 10; i++)
-      Place(
-          name: 'Place $i',
-          latLng: LatLng(48.848200 + i * 0.001, 2.319124 + i * 0.001)),
-    for (int i = 0; i < 10; i++)
-      Place(
-          name: 'Restaurant $i',
-          isClosed: i % 2 == 0,
-          latLng: LatLng(48.858265 - i * 0.001, 2.350107 + i * 0.001)),
-    for (int i = 0; i < 10; i++)
-      Place(
-          name: 'Bar $i',
-          latLng: LatLng(48.858265 + i * 0.01, 2.350107 - i * 0.01)),
-    for (int i = 0; i < 10; i++)
-      Place(
-          name: 'Hotel $i',
-          latLng: LatLng(48.858265 - i * 0.1, 2.350107 - i * 0.01)),
-    for (int i = 0; i < 10; i++)
-      Place(
-          name: 'Test $i',
-          latLng: LatLng(66.160507 + i * 0.1, -153.369141 + i * 0.1)),
-    for (int i = 0; i < 10; i++)
-      Place(
-          name: 'Test2 $i',
-          latLng: LatLng(-36.848461 + i * 1, 169.763336 + i * 1)),
-  ];
-
   @override
   void initState() {
     _manager = _initClusterManager();
@@ -73,8 +48,16 @@ class MapSampleState extends State<MapSample> {
   }
 
   ClusterManager _initClusterManager() {
-    return ClusterManager<Place>(items, _updateMarkers,
-        markerBuilder: _markerBuilder);
+    var screenWidth =
+        (window.physicalSize.shortestSide / window.devicePixelRatio);
+    debugPrint('screen physical width is $screenWidth');
+    return ClusterManager<Place>(
+      Mock.items,
+      _updateMarkers,
+      markerBuilder: _markerBuilder,
+      clusterAlgorithmType: ClusterAlgorithmType.DIST_AGGLO_SIMPLIFIED,
+      clusteringParams: DistanceParams(epsilon: 15),
+    );
   }
 
   void _updateMarkers(Set<Marker> markers) {
