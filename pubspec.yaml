@@ -10,8 +10,12 @@ dependencies:
   flutter:
     sdk: flutter
 
-  google_maps_flutter_platform_interface: ^2.1.0
+  google_maps_flutter_platform_interface: ^2.2.1
+  dart_geohash: ^2.0.2
 
 dev_dependencies:
+  lint: 1.8.2
   flutter_test:
     sdk: flutter
+
+  

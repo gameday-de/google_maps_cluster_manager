@@ -1,5 +1,5 @@
-import 'dart:ui';
 import 'dart:typed_data';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:google_maps_cluster_manager/cluster.dart';
@@ -10,15 +10,19 @@ Future<Marker> Function(Cluster) get basicMarkerBuilder => (cluster) async {
         markerId: MarkerId(cluster.getId()),
         position: cluster.location,
         onTap: () {
-          print(cluster);
+          debugPrint(cluster.toString());
         },
-        icon: await _getBasicClusterBitmap(cluster.isMultiple ? 125 : 75,
-            text: cluster.isMultiple ? cluster.count.toString() : null),
+        icon: await _getBasicClusterBitmap(
+          cluster.isMultiple ? 125 : 75,
+          text: cluster.isMultiple ? cluster.count.toString() : null,
+        ),
       );
     };
 
-Future<BitmapDescriptor> _getBasicClusterBitmap(int size,
-    {String? text}) async {
+Future<BitmapDescriptor> _getBasicClusterBitmap(
+  int size, {
+  String? text,
+}) async {
   final PictureRecorder pictureRecorder = PictureRecorder();
   final Canvas canvas = Canvas(pictureRecorder);
   final Paint paint1 = Paint()..color = Colors.red;
@@ -26,13 +30,14 @@ Future<BitmapDescriptor> _getBasicClusterBitmap(int size,
   canvas.drawCircle(Offset(size / 2, size / 2), size / 2.0, paint1);
 
   if (text != null) {
-    TextPainter painter = TextPainter(textDirection: TextDirection.ltr);
+    final TextPainter painter = TextPainter(textDirection: TextDirection.ltr);
     painter.text = TextSpan(
       text: text,
       style: TextStyle(
-          fontSize: size / 3,
-          color: Colors.white,
-          fontWeight: FontWeight.normal),
+        fontSize: size / 3,
+        color: Colors.white,
+        fontWeight: FontWeight.normal,
+      ),
     );
     painter.layout();
     painter.paint(

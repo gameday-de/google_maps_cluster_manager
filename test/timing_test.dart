@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_maps_cluster_manager/algorithms/cluster_algorithm.dart';
 import 'package:google_maps_cluster_manager/algorithms/distance_clustering.dart';
@@ -30,9 +31,9 @@ List<ClusterItem> getItems({int scale = 10}) {
   ];
 }
 
-var bounds = LatLngBounds(
-  southwest: LatLng(48.7648185807006, 2.2878488525748253),
-  northeast: LatLng(48.948239438634516, 2.4165948852896686),
+LatLngBounds bounds = LatLngBounds(
+  southwest: const LatLng(48.7648185807006, 2.2878488525748253),
+  northeast: const LatLng(48.948239438634516, 2.4165948852896686),
 );
 
 void main() {
@@ -45,7 +46,7 @@ void main() {
         bounds.southwest.latitude,
         bounds.southwest.longitude,
       );
-      print('haversineDistance executed in ${stopwatch.elapsed}');
+      debugPrint('haversineDistance executed in ${stopwatch.elapsed}');
     });
 
     test('Euclidean distance', () {
@@ -56,63 +57,63 @@ void main() {
         bounds.southwest.latitude,
         bounds.southwest.longitude,
       );
-      print('haversineDistance executed in ${stopwatch.elapsed}');
+      debugPrint('haversineDistance executed in ${stopwatch.elapsed}');
     });
   });
 
   group('test timing of cluster algorithms', () {
-    var scale = 200;
-    var distParams = DistanceParams(fixed: true, epsilon: 100);
+    const scale = 200;
+    final distParams = DistanceParams(fixed: true, epsilon: 100);
 
     test('GEOHASH algorithm', () {
-      var items = getItems(scale: scale);
+      final items = getItems(scale: scale);
       final stopwatch = Stopwatch()..start();
       GeohashClustering(ClusterAlgorithmType.GEOHASH, 20).run(items);
-      print('GEOHASH executed in ${stopwatch.elapsed}');
+      debugPrint('GEOHASH executed in ${stopwatch.elapsed}');
     });
 
     test('DIST_AGGLO_HAVERSINE algorithm', () {
-      var items = getItems(scale: scale);
+      final items = getItems(scale: scale);
       final stopwatch = Stopwatch()..start();
       DistanceClustering(
         ClusterAlgorithmType.DIST_AGGLO_HAVERSINE,
         distParams,
         bounds,
       ).run(items);
-      print('DIST_AGGLO_HAVERSINE executed in ${stopwatch.elapsed}');
+      debugPrint('DIST_AGGLO_HAVERSINE executed in ${stopwatch.elapsed}');
     });
 
     test('DIST_AGGLO_SIMPLIFIED algorithm', () {
-      var items = getItems(scale: scale);
+      final items = getItems(scale: scale);
       final stopwatch = Stopwatch()..start();
       DistanceClustering(
         ClusterAlgorithmType.DIST_AGGLO_SIMPLIFIED,
         distParams,
         bounds,
       ).run(items);
-      print('DIST_AGGLO_SIMPLIFIED executed in ${stopwatch.elapsed}');
+      debugPrint('DIST_AGGLO_SIMPLIFIED executed in ${stopwatch.elapsed}');
     });
 
     test('DIST_GREEDY_HAVERSINE algorithm', () {
-      var items = getItems(scale: scale);
+      final items = getItems(scale: scale);
       final stopwatch = Stopwatch()..start();
       DistanceClustering(
         ClusterAlgorithmType.DIST_GREEDY_HAVERSINE,
         distParams,
         bounds,
       ).run(items);
-      print('DIST_GREEDY_HAVERSINE executed in ${stopwatch.elapsed}');
+      debugPrint('DIST_GREEDY_HAVERSINE executed in ${stopwatch.elapsed}');
     });
 
     test('DIST_GREEDY_SIMPLIFIED algorithm', () {
-      var items = getItems(scale: scale);
+      final items = getItems(scale: scale);
       final stopwatch = Stopwatch()..start();
       DistanceClustering(
         ClusterAlgorithmType.DIST_GREEDY_SIMPLIFIED,
         distParams,
         bounds,
       ).run(items);
-      print('DIST_GREEDY_SIMPLIFIEd executed in ${stopwatch.elapsed}');
+      debugPrint('DIST_GREEDY_SIMPLIFIEd executed in ${stopwatch.elapsed}');
     });
   });
 }

@@ -18,7 +18,7 @@ class ClusterManager<T extends ClusterItem> {
     this.clusterAlgorithmType = ClusterAlgorithmType.GEOHASH,
     this.clusteringParams,
     this.stopClusteringZoom,
-  })  : this.markerBuilder = markerBuilder ?? basicMarkerBuilder,
+  })  : markerBuilder = markerBuilder ?? basicMarkerBuilder,
         assert(levels.length <= precision);
 
   /// Method to build markers
@@ -43,7 +43,7 @@ class ClusterManager<T extends ClusterItem> {
   final double? stopClusteringZoom;
 
   /// Precision of the geohash
-  static final int precision = kIsWeb ? 12 : 20;
+  static const int precision = kIsWeb ? 12 : 20;
 
   /// Google Maps map id
   int? _mapId;
@@ -58,7 +58,7 @@ class ClusterManager<T extends ClusterItem> {
   final double _maxLng = 180 - pow(10, -10.0) as double;
 
   /// Set Google Map Id for the cluster manager
-  void setMapId(int mapId, {bool withUpdate = true}) async {
+  Future<void> setMapId(int mapId, {bool withUpdate = true}) async {
     _mapId = mapId;
     _zoom = await GoogleMapsFlutterPlatform.instance.getZoomLevel(mapId: mapId);
     if (withUpdate) updateMap();
@@ -69,8 +69,8 @@ class ClusterManager<T extends ClusterItem> {
     _updateClusters();
   }
 
-  void _updateClusters() async {
-    List<Cluster<T>> mapMarkers = await getMarkers();
+  Future<void> _updateClusters() async {
+    final List<Cluster<T>> mapMarkers = await getMarkers();
 
     final Set<Marker> markers =
         Set.from(await Future.wait(mapMarkers.map((m) => markerBuilder(m))));
@@ -91,7 +91,7 @@ class ClusterManager<T extends ClusterItem> {
   }
 
   /// Method called on camera move
-  void onCameraMove(CameraPosition position, {forceUpdate = false}) {
+  void onCameraMove(CameraPosition position, {bool forceUpdate = false}) {
     _zoom = position.zoom;
     if (forceUpdate) {
       updateMap();
@@ -105,14 +105,15 @@ class ClusterManager<T extends ClusterItem> {
     final LatLngBounds mapBounds = await GoogleMapsFlutterPlatform.instance
         .getVisibleRegion(mapId: _mapId!);
 
-    late LatLngBounds inflatedBounds = _inflateBounds(mapBounds);
+    late final LatLngBounds inflatedBounds = _inflateBounds(mapBounds);
 
-    List<T> visibleItems = items.where((i) {
+    final List<T> visibleItems = items.where((i) {
       return inflatedBounds.contains(i.location);
     }).toList();
 
-    if (stopClusteringZoom != null && _zoom >= stopClusteringZoom!)
+    if (stopClusteringZoom != null && _zoom >= stopClusteringZoom!) {
       return visibleItems.map((i) => Cluster<T>.fromItems([i])).toList();
+    }
 
     // Geohash CLustering
     if (clusterAlgorithmType == ClusterAlgorithmType.GEOHASH) {
@@ -141,11 +142,13 @@ class ClusterManager<T extends ClusterItem> {
     }
 
     // Latitudes expanded beyond +/- 90 are automatically clamped by LatLng
-    double lat =
+    final double lat =
         extraPercent * (bounds.northeast.latitude - bounds.southwest.latitude);
 
-    double eLng = (bounds.northeast.longitude + lng).clamp(-_maxLng, _maxLng);
-    double wLng = (bounds.southwest.longitude - lng).clamp(-_maxLng, _maxLng);
+    final double eLng =
+        (bounds.northeast.longitude + lng).clamp(-_maxLng, _maxLng);
+    final double wLng =
+        (bounds.southwest.longitude - lng).clamp(-_maxLng, _maxLng);
 
     return LatLngBounds(
       southwest: LatLng(bounds.southwest.latitude - lat, wLng),

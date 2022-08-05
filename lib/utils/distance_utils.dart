@@ -1,5 +1,4 @@
 import 'dart:math';
-import 'package:flutter/material.dart';
 import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
 
 enum DistanceType { EUCLIDEAN, HAVERSINE }
@@ -38,23 +37,31 @@ class DistUtils {
   }
 
   static double haversineDistance(
-      double lat, double lng, double lat0, double lng0) {
-    var R = 6371; // Radius of the earth in km
-    var dLat = degreeToRadian(lat0 - lat);
-    var dLon = degreeToRadian(lng0 - lng);
-    var a = sin(dLat / 2) * sin(dLat / 2) +
+    double lat,
+    double lng,
+    double lat0,
+    double lng0,
+  ) {
+    const R = 6371; // Radius of the earth in km
+    final dLat = degreeToRadian(lat0 - lat);
+    final dLon = degreeToRadian(lng0 - lng);
+    final a = sin(dLat / 2) * sin(dLat / 2) +
         cos(degreeToRadian(lat)) *
             cos(degreeToRadian(lat0)) *
             sin(dLon / 2) *
             sin(dLon / 2);
-    var c = 2 * atan2(sqrt(a), sqrt(1 - a));
-    var d = R * c; // Distance in km
+    final c = 2 * atan2(sqrt(a), sqrt(1 - a));
+    final d = R * c; // Distance in km
     return d;
   }
 
   static double euclideanDistance(
-      double lat, double lng, double lat0, double lng0) {
-    final deglen = 110.25;
+    double lat,
+    double lng,
+    double lat0,
+    double lng0,
+  ) {
+    const deglen = 110.25;
     final x = lat - lat0;
     final y = (lng - lng0) * cos(lat0);
     return deglen * sqrt(pow(x, 2) + pow(y, 2));
@@ -65,14 +72,14 @@ class DistUtils {
   }
 
   static double zoom2meterPerPixel(double zoomLevel) {
-    int base = 156412;
+    const int base = 156412;
     return base / (pow(zoomLevel + 1, 2));
   }
 
   static double boundsPercent2km(LatLngBounds bounds, double percent) {
-    var ne = bounds.northeast;
-    var nw = LatLng(bounds.northeast.latitude, bounds.southwest.longitude);
-    var dist =
+    final ne = bounds.northeast;
+    final nw = LatLng(bounds.northeast.latitude, bounds.southwest.longitude);
+    final dist =
         haversineDistance(ne.latitude, ne.longitude, nw.latitude, nw.longitude);
 
     return dist * percent / 100;
@@ -84,6 +91,8 @@ class _Tuple {
   final LatLng pos1;
   final LatLng pos2;
 
-  bool operator ==(o) => o is _Tuple && pos1 == o.pos1 && pos2 == o.pos2;
+  @override
+  bool operator ==(Object o) => o is _Tuple && pos1 == o.pos1 && pos2 == o.pos2;
+  @override
   int get hashCode => pos1.hashCode + pos2.hashCode;
 }

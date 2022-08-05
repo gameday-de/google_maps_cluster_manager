@@ -32,10 +32,12 @@ class DistanceClustering<T extends ClusterItem> extends ClusterAlgorithm<T> {
   final DistUtils distUtils = DistUtils();
 
   ///Run clustering process, add configs in constructor
+  @override
   List<Cluster<T>> run(List<T> inputItems) {
-    DistanceParams params = this.params as DistanceParams;
+    final DistanceParams params =
+        (this.params ?? DistanceParams()) as DistanceParams;
 
-    var epsilon;
+    double epsilon;
     if (params.fixed) {
       epsilon = params.epsilon;
     } else {
@@ -53,19 +55,21 @@ class DistanceClustering<T extends ClusterItem> extends ClusterAlgorithm<T> {
   }
 
   List<Cluster<T>> agglomerativeClustering(
-      List<T> inputMarker, double epsilon) {
-    List<Cluster<T>> clusterList = [];
+    List<T> inputMarker,
+    double epsilon,
+  ) {
+    final List<Cluster<T>> clusterList = [];
 
     // Initialize Cluster with one marker each
-    for (T marker in inputMarker) {
+    for (final T marker in inputMarker) {
       clusterList.add(Cluster.fromItems([marker]));
     }
 
     bool changed = true;
     while (changed) {
       changed = false;
-      for (Cluster<T> c in clusterList) {
-        Cluster<T>? minDistCluster =
+      for (final Cluster<T> c in clusterList) {
+        final Cluster<T>? minDistCluster =
             _getClosestCluster(clusterList, c, epsilon);
 
         if (minDistCluster != null) {
@@ -83,21 +87,21 @@ class DistanceClustering<T extends ClusterItem> extends ClusterAlgorithm<T> {
 
   List<Cluster<T>> greedyClustering(List<T> inputMarker, double epsilon) {
     List<Cluster<T>> currentList = [];
-    List<Cluster<T>> outputList = [];
+    final List<Cluster<T>> outputList = [];
 
     // Initialize Cluster with one marker each
-    for (T marker in inputMarker) {
+    for (final T marker in inputMarker) {
       currentList.add(Cluster.fromItems([marker]));
     }
 
-    while (currentList.length != 0) {
-      List<Cluster<T>> remainingList = [];
+    while (currentList.isNotEmpty) {
+      final List<Cluster<T>> remainingList = [];
 
       var curCluster = currentList.first;
       currentList.remove(curCluster);
 
-      for (Cluster<T> c in currentList) {
-        double dist = distUtils.getLatLonDist(
+      for (final Cluster<T> c in currentList) {
+        final double dist = distUtils.getLatLonDist(
           c.location,
           curCluster.location,
           type: algorithmType2distanceType(type),
@@ -118,13 +122,16 @@ class DistanceClustering<T extends ClusterItem> extends ClusterAlgorithm<T> {
   }
 
   Cluster<T>? _getClosestCluster(
-      List<Cluster<T>> clusterList, Cluster cluster, double epsilon) {
+    List<Cluster<T>> clusterList,
+    Cluster cluster,
+    double epsilon,
+  ) {
     double minDist = double.infinity;
 
     Cluster<T>? minDistCluster;
-    for (Cluster<T> c in clusterList) {
+    for (final Cluster<T> c in clusterList) {
       if (c.location == cluster.location) continue;
-      double dist = distUtils.getLatLonDist(
+      final double dist = distUtils.getLatLonDist(
         c.location,
         cluster.location,
         type: algorithmType2distanceType(type),
