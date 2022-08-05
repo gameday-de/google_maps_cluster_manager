@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:google_maps_cluster_manager/utils/common.dart';
+import 'package:google_maps_cluster_manager/utils/distance_utils.dart';
 import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
 
 void main() {
@@ -10,8 +10,7 @@ void main() {
         () {
       LatLng start = LatLng(52.421327, 10.623056);
       LatLng end = LatLng(52.42748887594039, 10.623379056822062);
-      final DistUtils utils = DistUtils();
-      double dist = utils.haversineDistance(
+      double dist = DistUtils.haversineDistance(
           start.latitude, start.longitude, end.latitude, end.longitude);
       debugPrint('dist is $dist');
       expect(dist >= 0.6 && dist <= 0.8, true);
@@ -22,8 +21,7 @@ void main() {
         () {
       LatLng start = LatLng(52.45175365359977, 10.679139941065786);
       LatLng end = LatLng(51.7578902763405, 10.74257578002594);
-      final DistUtils utils = DistUtils();
-      double dist = utils.haversineDistance(
+      double dist = DistUtils.haversineDistance(
           start.latitude, start.longitude, end.latitude, end.longitude);
       debugPrint('dist is $dist');
       expect(dist >= 75 && dist <= 80, true);

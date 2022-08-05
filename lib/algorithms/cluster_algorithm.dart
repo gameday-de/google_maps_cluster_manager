@@ -6,14 +6,14 @@ enum ClusterAlgorithmType {
   DIST_AGGLO_HAVERSINE,
   DIST_AGGLO_SIMPLIFIED,
   DIST_GREEDY_HAVERSINE,
-  DIST_GREEDY_SIMPLIFIEd
+  DIST_GREEDY_SIMPLIFIED
 }
 
 class ClusterAlgorithmParams {}
 
 abstract class ClusterAlgorithm<T extends ClusterItem> {
-  ClusterAlgorithm(this.type, this.params);
-  final ClusterAlgorithmParams params;
+  ClusterAlgorithm(this.type, {this.params});
+  final ClusterAlgorithmParams? params;
   final ClusterAlgorithmType type;
 
   List<Cluster<T>> run(List<T> inputItems);

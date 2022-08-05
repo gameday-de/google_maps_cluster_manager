@@ -1,31 +1,28 @@
 import 'dart:math';
-import 'dart:typed_data';
-import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:google_maps_cluster_manager/algorithms/cluster_algorithm.dart';
 import 'package:google_maps_cluster_manager/algorithms/distance_clustering.dart';
 import 'package:google_maps_cluster_manager/algorithms/geohash_clustering.dart';
 import 'package:google_maps_cluster_manager/google_maps_cluster_manager.dart';
+import 'package:google_maps_cluster_manager/utils/bitmap_marker.dart';
 import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
 
 class ClusterManager<T extends ClusterItem> {
-  ClusterManager(this._items, this.updateMarkers,
-      {Future<Marker> Function(Cluster<T>)? markerBuilder,
-      this.levels = const [1, 4.25, 6.75, 8.25, 11.5, 14.5, 16.0, 16.5, 20.0],
-      this.extraPercent = 0.5,
-      this.maxItemsDistAlgorithm = 200,
-      this.clusterAlgorithmType = ClusterAlgorithmType.GEOHASH,
-      this.stopClusteringZoom})
-      : this.markerBuilder = markerBuilder ?? _basicMarkerBuilder,
+  ClusterManager(
+    this._items,
+    this.updateMarkers, {
+    Future<Marker> Function(Cluster<T>)? markerBuilder,
+    this.levels = const [1, 4.25, 6.75, 8.25, 11.5, 14.5, 16.0, 16.5, 20.0],
+    this.extraPercent = 0.5,
+    this.clusterAlgorithmType = ClusterAlgorithmType.GEOHASH,
+    this.clusteringParams,
+    this.stopClusteringZoom,
+  })  : this.markerBuilder = markerBuilder ?? basicMarkerBuilder,
         assert(levels.length <= precision);
 
   /// Method to build markers
   final Future<Marker> Function(Cluster<T>) markerBuilder;
-
-  // Num of Items to switch from MAX_DIST algo to GEOHASH
-  final int maxItemsDistAlgorithm;
 
   /// Function to update Markers on Google Map
   final void Function(Set<Marker>) updateMarkers;
@@ -38,6 +35,9 @@ class ClusterManager<T extends ClusterItem> {
 
   // Clusteringalgorithm
   final ClusterAlgorithmType clusterAlgorithmType;
+
+  /// ClusterAlgorithm specific parameters
+  final ClusterAlgorithmParams? clusteringParams;
 
   /// Zoom level to stop cluster rendering
   final double? stopClusteringZoom;
@@ -114,17 +114,18 @@ class ClusterManager<T extends ClusterItem> {
     if (stopClusteringZoom != null && _zoom >= stopClusteringZoom!)
       return visibleItems.map((i) => Cluster<T>.fromItems([i])).toList();
 
-    ClusterAlgorithm<T> algo;
+    // Geohash CLustering
     if (clusterAlgorithmType == ClusterAlgorithmType.GEOHASH) {
-      ClusterAlgorithmParams params =
-          GeohashParams(precision: _findLevel(levels));
-      algo = GeohashClustering<T>(clusterAlgorithmType, params);
-    } else {
-      ClusterAlgorithmParams params = DistanceParams(epsilon: 1);
-      algo = DistanceClustering<T>(clusterAlgorithmType, params);
+      return GeohashClustering<T>(clusterAlgorithmType, _findLevel(levels))
+          .run(visibleItems);
     }
 
-    return algo.run(visibleItems);
+    // Distance Clustering
+    return DistanceClustering<T>(
+      clusterAlgorithmType,
+      clusteringParams ?? DistanceParams(),
+      mapBounds,
+    ).run(visibleItems);
   }
 
   LatLngBounds _inflateBounds(LatLngBounds bounds) {
@@ -161,58 +162,5 @@ class ClusterManager<T extends ClusterItem> {
     }
 
     return 1;
-  }
-
-  int _getZoomLevel(double zoom) {
-    for (int i = levels.length - 1; i >= 0; i--) {
-      if (levels[i] <= zoom) {
-        return levels[i].toInt();
-      }
-    }
-
-    return 1;
-  }
-
-  static Future<Marker> Function(Cluster) get _basicMarkerBuilder =>
-      (cluster) async {
-        return Marker(
-          markerId: MarkerId(cluster.getId()),
-          position: cluster.location,
-          onTap: () {
-            print(cluster);
-          },
-          icon: await _getBasicClusterBitmap(cluster.isMultiple ? 125 : 75,
-              text: cluster.isMultiple ? cluster.count.toString() : null),
-        );
-      };
-
-  static Future<BitmapDescriptor> _getBasicClusterBitmap(int size,
-      {String? text}) async {
-    final PictureRecorder pictureRecorder = PictureRecorder();
-    final Canvas canvas = Canvas(pictureRecorder);
-    final Paint paint1 = Paint()..color = Colors.red;
-
-    canvas.drawCircle(Offset(size / 2, size / 2), size / 2.0, paint1);
-
-    if (text != null) {
-      TextPainter painter = TextPainter(textDirection: TextDirection.ltr);
-      painter.text = TextSpan(
-        text: text,
-        style: TextStyle(
-            fontSize: size / 3,
-            color: Colors.white,
-            fontWeight: FontWeight.normal),
-      );
-      painter.layout();
-      painter.paint(
-        canvas,
-        Offset(size / 2 - painter.width / 2, size / 2 - painter.height / 2),
-      );
-    }
-
-    final img = await pictureRecorder.endRecording().toImage(size, size);
-    final data = await img.toByteData(format: ImageByteFormat.png) as ByteData;
-
-    return BitmapDescriptor.fromBytes(data.buffer.asUint8List());
   }
 }
