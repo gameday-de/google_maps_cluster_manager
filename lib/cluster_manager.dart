@@ -19,7 +19,10 @@ class ClusterManager<T extends ClusterItem> {
     this.clusteringParams,
     this.stopClusteringZoom,
   })  : markerBuilder = markerBuilder ?? basicMarkerBuilder,
-        assert(levels.length <= precision);
+        assert(levels.length <= precision) {
+    debugPrint(
+        'ClusterManager: Use ${clusterAlgorithmType.toString()} algorithm for clustering');
+  }
 
   /// Method to build markers
   final Future<Marker> Function(Cluster<T>) markerBuilder;
