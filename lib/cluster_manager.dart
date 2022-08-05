@@ -103,6 +103,8 @@ class ClusterManager<T extends ClusterItem> {
 
   /// Retrieve cluster markers
   Future<List<Cluster<T>>> getMarkers() async {
+    final stopwatch = Stopwatch()..start();
+
     if (_mapId == null) return List.empty();
 
     final LatLngBounds mapBounds = await GoogleMapsFlutterPlatform.instance
@@ -125,11 +127,13 @@ class ClusterManager<T extends ClusterItem> {
     }
 
     // Distance Clustering
-    return DistanceClustering<T>(
+    final out = DistanceClustering<T>(
       clusterAlgorithmType,
       clusteringParams ?? DistanceParams(),
       mapBounds,
     ).run(visibleItems);
+    debugPrint('ClusterManager: clustering executed in ${stopwatch.elapsed}');
+    return out;
   }
 
   LatLngBounds _inflateBounds(LatLngBounds bounds) {
